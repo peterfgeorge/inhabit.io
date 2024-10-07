@@ -22,6 +22,7 @@ public class MapGenerator : MonoBehaviour
     public int seed;
     public Vector2 offset;
     public bool useFalloff;
+    public bool removeSmallerIslands;
     public float meshHeightMultiplier;
     public AnimationCurve meshHeightCurve;
  
@@ -34,15 +35,27 @@ public class MapGenerator : MonoBehaviour
         falloffMap = FalloffGenerator.GenerateFalloffMap(mapChunkSize);
     }
     public void GenerateMap() {
-        float[,] noiseMap = Noise.GenerateNoiseMap (mapChunkSize, mapChunkSize, seed, noiseScale, octaves, persistance, lacunarity, offset);
+        float[,] noiseMap = Noise.GenerateNoiseMap(mapChunkSize, mapChunkSize, seed, noiseScale, octaves, persistance, lacunarity, offset);
 
+        if (useFalloff) {
+            for (int y = 0; y < mapChunkSize; y++) {
+                for (int x = 0; x < mapChunkSize; x++) {
+                    noiseMap[x, y] = Mathf.Clamp01(noiseMap[x, y] - falloffMap[x, y]);
+                }
+            }
+        }
+
+        if (removeSmallerIslands) {
+            noiseMap = IslandRemover.RemoveSmallerIslands(noiseMap, 0.35f); // Remove smaller islands before coloring
+        }
+
+        // Update the colourMap based on the modified noiseMap
         Color[] colourMap = new Color[mapChunkSize * mapChunkSize];
         for (int y = 0; y < mapChunkSize; y++) {
             for (int x = 0; x < mapChunkSize; x++) {
-                if (useFalloff) {
-                    noiseMap[x,y] = Mathf.Clamp01(noiseMap[x,y] - falloffMap[x,y]);
-                }
-                float currentHeight = noiseMap [x, y];
+                float currentHeight = noiseMap[x, y];
+
+                // Update color based on the modified height values (including removed islands)
                 for (int i = 0; i < regions.Length; i++) {
                     if (currentHeight <= regions[i].height) {
                         colourMap[y * mapChunkSize + x] = regions[i].colour;
