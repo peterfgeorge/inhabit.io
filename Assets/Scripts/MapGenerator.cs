@@ -46,7 +46,7 @@ public class MapGenerator : MonoBehaviour
         }
 
         if (removeSmallerIslands) {
-            noiseMap = IslandRemover.RemoveSmallerIslands(noiseMap, 0.35f); // Remove smaller islands before coloring
+            noiseMap = IslandRemover.RemoveSmallerIslands(noiseMap, 0.35f, 10); // Remove smaller islands before coloring
         }
 
         // Update the colourMap based on the modified noiseMap

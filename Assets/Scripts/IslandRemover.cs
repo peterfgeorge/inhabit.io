@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEngine;
 
 public static class IslandRemover {
-    public static float[,] RemoveSmallerIslands(float[,] noiseMap, float landThreshold) {
+    public static float[,] RemoveSmallerIslands(float[,] noiseMap, float landThreshold, int bufferRange) {
         int width = noiseMap.GetLength(0);
         int height = noiseMap.GetLength(1);
         bool[,] visited = new bool[width, height];
@@ -29,6 +29,11 @@ public static class IslandRemover {
                     noiseMap[tile.x, tile.y] = 0.35f; // Set smaller island tiles to shallow water (height = .35)
                 }
             }
+        }
+
+        // Set height to zero around the largest island
+        if (largestIsland != null && largestIsland.Count > 0) {
+            noiseMap = SetHeightToZeroAroundIsland(noiseMap, largestIsland, bufferRange);
         }
 
         return noiseMap;
@@ -65,4 +70,35 @@ public static class IslandRemover {
 
         return neighbors;
     }
+
+    public static float[,] SetHeightToZeroAroundIsland(float[,] noiseMap, List<Vector2Int> mainIsland, float distanceThreshold) {
+        int width = noiseMap.GetLength(0);
+        int height = noiseMap.GetLength(1);
+        
+        // Create a HashSet for faster lookups
+        HashSet<Vector2Int> islandSet = new HashSet<Vector2Int>(mainIsland);
+
+        // Calculate the square of the distance threshold
+        float distanceThresholdSquared = distanceThreshold * distanceThreshold;
+
+        // Iterate over every tile in the noise map
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                Vector2Int currentTile = new Vector2Int(x, y);
+                
+                // Check if the current tile is within the distanceThreshold from the main island
+                bool isNearIsland = islandSet.Any(islandTile => 
+                    (currentTile.x - islandTile.x) * (currentTile.x - islandTile.x) +
+                    (currentTile.y - islandTile.y) * (currentTile.y - islandTile.y) <= distanceThresholdSquared);
+                
+                // If the tile is not near the main island, set it to zero
+                if (!isNearIsland) {
+                    noiseMap[x, y] = 0f; // Set height to 0 for water
+                }
+            }
+        }
+
+        return noiseMap;
+    }
+
 }
