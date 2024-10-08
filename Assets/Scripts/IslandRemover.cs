@@ -74,23 +74,55 @@ public static class IslandRemover {
     public static float[,] SetHeightToZeroAroundIsland(float[,] noiseMap, List<Vector2Int> mainIsland, float distanceThreshold) {
         int width = noiseMap.GetLength(0);
         int height = noiseMap.GetLength(1);
-        
+
         // Create a HashSet for faster lookups
         HashSet<Vector2Int> islandSet = new HashSet<Vector2Int>(mainIsland);
 
         // Calculate the square of the distance threshold
         float distanceThresholdSquared = distanceThreshold * distanceThreshold;
 
+        // Define grid cell size based on the distance threshold (e.g., the length of one side of a partition)
+        int cellSize = Mathf.CeilToInt(distanceThreshold);
+
+        // Create a dictionary to hold island tiles by grid cell
+        Dictionary<Vector2Int, List<Vector2Int>> grid = new Dictionary<Vector2Int, List<Vector2Int>>();
+
+        // Populate the grid with island tiles
+        foreach (Vector2Int islandTile in mainIsland) {
+            Vector2Int gridPos = new Vector2Int(islandTile.x / cellSize, islandTile.y / cellSize);
+            if (!grid.ContainsKey(gridPos)) {
+                grid[gridPos] = new List<Vector2Int>();
+            }
+            grid[gridPos].Add(islandTile);
+        }
+
         // Iterate over every tile in the noise map
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 Vector2Int currentTile = new Vector2Int(x, y);
-                
-                // Check if the current tile is within the distanceThreshold from the main island
-                bool isNearIsland = islandSet.Any(islandTile => 
-                    (currentTile.x - islandTile.x) * (currentTile.x - islandTile.x) +
-                    (currentTile.y - islandTile.y) * (currentTile.y - islandTile.y) <= distanceThresholdSquared);
-                
+                Vector2Int gridPos = new Vector2Int(currentTile.x / cellSize, currentTile.y / cellSize);
+
+                bool isNearIsland = false;
+
+                // Check neighboring grid cells (including the current cell and its neighbors)
+                for (int offsetY = -1; offsetY <= 1; offsetY++) {
+                    for (int offsetX = -1; offsetX <= 1; offsetX++) {
+                        Vector2Int neighborGridPos = new Vector2Int(gridPos.x + offsetX, gridPos.y + offsetY);
+                        if (grid.ContainsKey(neighborGridPos)) {
+                            foreach (Vector2Int islandTile in grid[neighborGridPos]) {
+                                float distSquared = (currentTile.x - islandTile.x) * (currentTile.x - islandTile.x) +
+                                                    (currentTile.y - islandTile.y) * (currentTile.y - islandTile.y);
+                                if (distSquared <= distanceThresholdSquared) {
+                                    isNearIsland = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (isNearIsland) break;
+                    }
+                    if (isNearIsland) break;
+                }
+
                 // If the tile is not near the main island, set it to zero
                 if (!isNearIsland) {
                     noiseMap[x, y] = 0f; // Set height to 0 for water
