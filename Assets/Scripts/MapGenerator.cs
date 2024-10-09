@@ -8,7 +8,7 @@ public class MapGenerator : MonoBehaviour
 {
     public enum DrawMode {NoiseMap, ColourMap, Mesh, FalloffMap}
     public DrawMode drawMode;
-
+    public List<Biome> biomes;
     const int mapChunkSize = 241;
     [Range(0,6)]
     public int levelOfDetail;
@@ -132,4 +132,11 @@ public struct TerrainType {
     public string name;
     public float height;
     public Color colour;
+}
+
+[System.Serializable]
+public class Biome
+{
+    public string biomeName;
+    public TerrainType[] regions; // Array of TerrainType specific to each biome
 }
