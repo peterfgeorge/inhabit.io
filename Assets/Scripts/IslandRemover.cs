@@ -3,6 +3,27 @@ using System.Linq;
 using UnityEngine;
 
 public static class IslandRemover {
+    public static List<Vector2Int> GetMainIslandCoordinates(float[,] noiseMap, float landThreshold) {
+        int width = noiseMap.GetLength(0);
+        int height = noiseMap.GetLength(1);
+        bool[,] visited = new bool[width, height];
+        List<List<Vector2Int>> islands = new List<List<Vector2Int>>();
+
+        // Flood fill to find all islands
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (!visited[x, y] && noiseMap[x, y] > landThreshold) {
+                    List<Vector2Int> island = FloodFill(noiseMap, visited, x, y, landThreshold);
+                    islands.Add(island);
+                }
+            }
+        }
+
+        // Find the largest island and return its coordinates
+        List<Vector2Int> largestIsland = islands.OrderByDescending(island => island.Count).FirstOrDefault();
+
+        return largestIsland;
+    }
     public static float[,] RemoveSmallerIslands(float[,] noiseMap, float landThreshold, int bufferRange) {
         int width = noiseMap.GetLength(0);
         int height = noiseMap.GetLength(1);

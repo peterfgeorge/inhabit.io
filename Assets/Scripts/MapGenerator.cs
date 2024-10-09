@@ -23,6 +23,7 @@ public class MapGenerator : MonoBehaviour
     public Vector2 offset;
     public bool useFalloff;
     public bool removeSmallerIslands;
+    public bool addBiomes;
     public float meshHeightMultiplier;
     public AnimationCurve meshHeightCurve;
  
@@ -49,19 +50,53 @@ public class MapGenerator : MonoBehaviour
             noiseMap = IslandRemover.RemoveSmallerIslands(noiseMap, 0.35f, 10); // Remove smaller islands before coloring
         }
 
+        List<Vector2Int> mainIsland = IslandRemover.GetMainIslandCoordinates(noiseMap, 0.35f);
+
+        List<HashSet<Vector2Int>> biomes = new List<HashSet<Vector2Int>>();
+
+        if (addBiomes) // Check if biomes should be added
+        {
+            int numberOfBiomes = 3; // You can adjust this based on your requirements
+            biomes = BiomeGenerator.DivideMainIslandIntoBiomes(mainIsland, numberOfBiomes);
+        }
+
+        Color[] biomeColors = new Color[] { Color.green, Color.red, Color.yellow }; // Placeholder colors for biomes
+
         // Update the colourMap based on the modified noiseMap
         Color[] colourMap = new Color[mapChunkSize * mapChunkSize];
         for (int y = 0; y < mapChunkSize; y++) {
             for (int x = 0; x < mapChunkSize; x++) {
+                if (x >= noiseMap.GetLength(0) || y >= noiseMap.GetLength(1)) {
+                    Debug.LogError($"Index out of bounds: x = {x}, y = {y}");
+                }
                 float currentHeight = noiseMap[x, y];
+                Vector2Int currentTile = new Vector2Int(x, y);
 
-                // Update color based on the modified height values (including removed islands)
-                for (int i = 0; i < regions.Length; i++) {
-                    if (currentHeight <= regions[i].height) {
-                        colourMap[y * mapChunkSize + x] = regions[i].colour;
-                        break;
+                // Check which biome the current tile belongs to and assign the corresponding color
+                bool isBiomeTile = false;
+                for (int biomeIndex = 0; biomeIndex < biomes.Count; biomeIndex++) {
+                    if (biomes[biomeIndex].Contains(currentTile)) {
+                        for (int i = 0; i < regions.Length; i++) {
+                            if (currentHeight <= regions[i].height) {
+                                colourMap[y * mapChunkSize + x] = biomeColors[biomeIndex];
+                                isBiomeTile = true;
+                                break;
+                            }
+                        }
                     }
                 }
+
+                // If the tile is not part of any biome, assign water or other color
+                if (!isBiomeTile) {
+                    // Update color based on the modified height values (including removed islands)
+                    for (int i = 0; i < regions.Length; i++) {
+                        if (currentHeight <= regions[i].height) {
+                            colourMap[y * mapChunkSize + x] = regions[i].colour;
+                            break;
+                        }
+                    }
+                }
+
             }
         }
 
