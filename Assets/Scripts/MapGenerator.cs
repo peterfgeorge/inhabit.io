@@ -24,6 +24,8 @@ public class MapGenerator : MonoBehaviour
     public bool useFalloff;
     public bool removeSmallerIslands;
     public bool addBiomes;
+    [Range(0,8)]
+    public int numberOfBiomes;
     public float meshHeightMultiplier;
     public AnimationCurve meshHeightCurve;
  
@@ -56,11 +58,10 @@ public class MapGenerator : MonoBehaviour
 
         if (addBiomes) // Check if biomes should be added
         {
-            int numberOfBiomes = 3; // You can adjust this based on your requirements
             biomes = BiomeGenerator.DivideMainIslandIntoBiomes(mainIsland, numberOfBiomes);
         }
 
-        Color[] biomeColors = new Color[] { Color.green, Color.red, Color.yellow }; // Placeholder colors for biomes
+        Color[] biomeColors = new Color[] { Color.green, Color.red, Color.yellow, Color.blue, Color.cyan, Color.grey, Color.white, Color.black, Color.magenta }; // Placeholder colors for biomes
 
         // Update the colourMap based on the modified noiseMap
         Color[] colourMap = new Color[mapChunkSize * mapChunkSize];
