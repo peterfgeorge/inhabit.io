@@ -54,45 +54,55 @@ public class MapGenerator : MonoBehaviour
 
         List<Vector2Int> mainIsland = IslandRemover.GetMainIslandCoordinates(noiseMap, 0.35f);
 
-        List<HashSet<Vector2Int>> biomes = new List<HashSet<Vector2Int>>();
+        List<HashSet<Vector2Int>> biomeAreas  = new List<HashSet<Vector2Int>>();
 
-        if (addBiomes) // Check if biomes should be added
+        if (addBiomes && biomes.Count > 0) // Check if biomes should be added
         {
-            biomes = BiomeGenerator.DivideMainIslandIntoBiomes(mainIsland, numberOfBiomes);
+            biomeAreas = BiomeGenerator.DivideMainIslandIntoBiomes(mainIsland, numberOfBiomes);
         }
-
-        Color[] biomeColors = new Color[] { Color.green, Color.red, Color.yellow, Color.blue, Color.cyan, Color.grey, Color.white, Color.black, Color.magenta }; // Placeholder colors for biomes
 
         // Update the colourMap based on the modified noiseMap
         Color[] colourMap = new Color[mapChunkSize * mapChunkSize];
+        float[,] biomeSpecificHeights = new float[mapChunkSize, mapChunkSize];
+
+        int[] biomeAssignments = new int[biomeAreas.Count];
+
+        for(int i=0; i < biomeAreas.Count; i++) {
+            biomeAssignments[i] = Random.Range(0, biomes.Count);
+        }
+
         for (int y = 0; y < mapChunkSize; y++) {
             for (int x = 0; x < mapChunkSize; x++) {
-                if (x >= noiseMap.GetLength(0) || y >= noiseMap.GetLength(1)) {
-                    Debug.LogError($"Index out of bounds: x = {x}, y = {y}");
-                }
                 float currentHeight = noiseMap[x, y];
                 Vector2Int currentTile = new Vector2Int(x, y);
 
                 // Check which biome the current tile belongs to and assign the corresponding color
                 bool isBiomeTile = false;
-                for (int biomeIndex = 0; biomeIndex < biomes.Count; biomeIndex++) {
-                    if (biomes[biomeIndex].Contains(currentTile)) {
-                        for (int i = 0; i < regions.Length; i++) {
-                            if (currentHeight <= regions[i].height) {
-                                colourMap[y * mapChunkSize + x] = biomeColors[biomeIndex];
+                
+                for (int biomeIndex = 0; biomeIndex < biomeAreas.Count; biomeIndex++) {
+                    if (biomeAreas[biomeIndex].Contains(currentTile)) { // if this one area contains that tile
+                        Biome currentBiome = biomes[biomeAssignments[biomeIndex]];
+                        // Apply biome-specific mesh height multiplier and curve
+                        biomeSpecificHeights[x, y] = currentBiome.meshHeightCurve.Evaluate(currentHeight) * currentBiome.meshHeightMultiplier;
+
+                        // Assign terrain color based on the biome's regions
+                        for (int i = 0; i < currentBiome.regions.Length; i++) {
+                            if (currentHeight <= currentBiome.regions[i].height) {
+                                colourMap[y * mapChunkSize + x] = currentBiome.regions[i].colour;
                                 isBiomeTile = true;
                                 break;
                             }
                         }
+                        break;
                     }
                 }
 
                 // If the tile is not part of any biome, assign water or other color
                 if (!isBiomeTile) {
-                    // Update color based on the modified height values (including removed islands)
                     for (int i = 0; i < regions.Length; i++) {
                         if (currentHeight <= regions[i].height) {
                             colourMap[y * mapChunkSize + x] = regions[i].colour;
+                            biomeSpecificHeights[x, y] = meshHeightCurve.Evaluate(currentHeight) * meshHeightMultiplier;
                             break;
                         }
                     }
@@ -108,7 +118,7 @@ public class MapGenerator : MonoBehaviour
             display.DrawTexture(TextureGenerator.TextureFromColourMap(colourMap, mapChunkSize, mapChunkSize));
         }
         else if (drawMode == DrawMode.Mesh) {
-            display.DrawMesh(MeshGenerator.GenerateTerrainMesh(noiseMap, meshHeightMultiplier, meshHeightCurve, levelOfDetail), TextureGenerator.TextureFromColourMap(colourMap, mapChunkSize, mapChunkSize));
+             display.DrawBiomeMesh(noiseMap, biomeSpecificHeights, colourMap, mapChunkSize, mapChunkSize, levelOfDetail);
         } else if (drawMode == DrawMode.FalloffMap) {
             display.DrawTexture(TextureGenerator.TextureFromHeightMap(FalloffGenerator.GenerateFalloffMap(mapChunkSize)));
         }
@@ -138,5 +148,7 @@ public struct TerrainType {
 public class Biome
 {
     public string biomeName;
+    public float meshHeightMultiplier;
+    public AnimationCurve meshHeightCurve;
     public TerrainType[] regions; // Array of TerrainType specific to each biome
 }

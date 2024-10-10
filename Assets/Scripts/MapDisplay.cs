@@ -18,4 +18,13 @@ public class MapDisplay : MonoBehaviour
         meshFilter.sharedMesh = meshData.CreateMesh ();
         meshRenderer.sharedMaterial.mainTexture = texture;
     }
+
+    public void DrawBiomeMesh(float[,] noiseMap, float[,] biomeSpecificHeights, Color[] colourMap, int width, int height, int levelOfDetail) {
+        // Generate the mesh using biome-specific height data
+        MeshData biomeMeshData = MeshGenerator.GenerateTerrainMesh(noiseMap, biomeSpecificHeights, levelOfDetail);
+
+        // Apply the generated mesh and color texture to the terrain
+        meshFilter.sharedMesh = biomeMeshData.CreateMesh();
+        meshRenderer.sharedMaterial.mainTexture = TextureGenerator.TextureFromColourMap(colourMap, width, height);
+    }
 }
