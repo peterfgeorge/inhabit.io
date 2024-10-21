@@ -9,6 +9,7 @@ public class MapGenerator : MonoBehaviour
     public enum DrawMode {NoiseMap, ColourMap, Mesh, FalloffMap}
     public DrawMode drawMode;
     public List<Biome> biomes;
+    public List<IslandBiome> islandBiomes;
     const int mapChunkSize = 241;
     [Range(0,6)]
     public int levelOfDetail;
@@ -53,12 +54,32 @@ public class MapGenerator : MonoBehaviour
         }
 
         List<Vector2Int> mainIsland = IslandRemover.GetMainIslandCoordinates(noiseMap, 0.35f);
+        islandBiomes = new List<IslandBiome>(); // Initialize the IslandBiome list
 
         List<HashSet<Vector2Int>> biomeAreas  = new List<HashSet<Vector2Int>>();
 
         if (addBiomes && biomes.Count > 0) // Check if biomes should be added
         {
             biomeAreas = BiomeGenerator.DivideMainIslandIntoBiomes(mainIsland, numberOfBiomes);
+
+            // Create IslandBiomes based on the biome areas
+            for (int i = 0; i < biomeAreas.Count; i++)
+            {
+                Biome randomBiome = biomes[Random.Range(0, biomes.Count)];
+                IslandBiome islandBiome = new IslandBiome(randomBiome);
+
+                // Assign tiles to the biome
+                foreach (Vector2Int tile in biomeAreas[i])
+                {
+                    islandBiome.tiles.Add(tile);
+                    // Determine if this is a border tile (e.g., adjacent to non-biome tiles)
+                    if (IsBorderTile(tile, biomeAreas[i], noiseMap))
+                    {
+                        islandBiome.borderTiles.Add(tile);
+                    }
+                }
+                islandBiomes.Add(islandBiome); // Add the generated IslandBiome to the list
+            }
         }
 
         // Update the colourMap based on the modified noiseMap
@@ -79,15 +100,16 @@ public class MapGenerator : MonoBehaviour
                 // Check which biome the current tile belongs to and assign the corresponding color
                 bool isBiomeTile = false;
                 
-                for (int biomeIndex = 0; biomeIndex < biomeAreas.Count; biomeIndex++) {
-                    if (biomeAreas[biomeIndex].Contains(currentTile)) { // if this one area contains that tile
-                        Biome currentBiome = biomes[biomeAssignments[biomeIndex]];
-                        // Apply biome-specific mesh height multiplier and curve
+                foreach (IslandBiome islandBiome in islandBiomes) {
+                    if (islandBiome.tiles.Contains(currentTile)) { // if this IslandBiome contains the tile
+                        Biome currentBiome = islandBiome.biome;
                         biomeSpecificHeights[x, y] = currentBiome.meshHeightCurve.Evaluate(currentHeight) * currentBiome.meshHeightMultiplier;
 
                         // Assign terrain color based on the biome's regions
-                        for (int i = 0; i < currentBiome.regions.Length; i++) {
-                            if (currentHeight <= currentBiome.regions[i].height) {
+                        for (int i = 0; i < currentBiome.regions.Length; i++)
+                        {
+                            if (currentHeight <= currentBiome.regions[i].height)
+                            {
                                 colourMap[y * mapChunkSize + x] = currentBiome.regions[i].colour;
                                 isBiomeTile = true;
                                 break;
@@ -125,6 +147,22 @@ public class MapGenerator : MonoBehaviour
         
     }
 
+    // Simple method to check if a tile is a border tile (customize this to your needs)
+    bool IsBorderTile(Vector2Int tile, HashSet<Vector2Int> biomeArea, float[,] noiseMap)
+    {
+        // Check the surrounding tiles
+        Vector2Int[] directions = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+        foreach (Vector2Int dir in directions)
+        {
+            Vector2Int adjacentTile = tile + dir;
+            if (!biomeArea.Contains(adjacentTile))
+            {
+                return true; // This tile is on the edge of the biome
+            }
+        }
+        return false;
+    }
+
     void OnValidate() {
         if (lacunarity < 1) {
             lacunarity = 1;
@@ -135,20 +173,4 @@ public class MapGenerator : MonoBehaviour
 
         falloffMap = FalloffGenerator.GenerateFalloffMap (mapChunkSize);
     }
-}
-
-[System.Serializable]
-public struct TerrainType {
-    public string name;
-    public float height;
-    public Color colour;
-}
-
-[System.Serializable]
-public class Biome
-{
-    public string biomeName;
-    public float meshHeightMultiplier;
-    public AnimationCurve meshHeightCurve;
-    public TerrainType[] regions; // Array of TerrainType specific to each biome
 }
