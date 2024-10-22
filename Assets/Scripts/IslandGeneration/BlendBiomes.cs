@@ -14,96 +14,77 @@ public class BlendBiomes
 
     public void BlendBiomeHeights(float[,] biomeSpecificHeights)
     {
-        Dictionary<Vector2Int, List<Biome>> nearbyBiomes = GetNearbyBiomes();
+        // Create a distance map for each biome
+        Dictionary<IslandBiome, float[,]> distanceMaps = GenerateDistanceMaps();
 
+        // For each tile, calculate the blended height based on distances
         for (int y = 0; y < biomeSpecificHeights.GetLength(1); y++)
         {
             for (int x = 0; x < biomeSpecificHeights.GetLength(0); x++)
             {
-                Vector2Int currentTile = new Vector2Int(x, y);
-                if (nearbyBiomes.ContainsKey(currentTile))
+                float blendedHeight = 0;
+                float totalWeight = 0;
+
+                // Iterate through all biomes to calculate blended height
+                foreach (IslandBiome islandBiome in islandBiomes)
                 {
-                    float totalWeight = 0;
-                    float blendedHeight = 0;
+                    float distance = distanceMaps[islandBiome][x, y];
+                    float weight = Mathf.Clamp(1f / (distance + 1f), 0f, 10f); // Clamp max weight to avoid dominance
+                    float biomeHeight = islandBiome.biome.meshHeightCurve.Evaluate(noiseMap[x, y]) * islandBiome.biome.meshHeightMultiplier;
 
-                    // Influence from the current biome
-                    Biome currentBiome = GetBiomeForTile(currentTile);
-                    float currentBiomeHeight = currentBiome.meshHeightCurve.Evaluate(noiseMap[x, y]) * currentBiome.meshHeightMultiplier;
-                    blendedHeight += currentBiomeHeight * 0.8f; // Default influence
+                    blendedHeight += biomeHeight * weight;
+                    totalWeight += weight;
+                }
 
-                    // Influence from nearby biomes
-                    foreach (Biome neighborBiome in nearbyBiomes[currentTile])
-                    {
-                        float neighborHeight = neighborBiome.meshHeightCurve.Evaluate(noiseMap[x, y]) * neighborBiome.meshHeightMultiplier;
-                        float distance = Vector2Int.Distance(currentTile, currentTile); // Calculate the distance
-                        float weight = Mathf.Max(0, 1 - (distance / 5f)); // Weight based on distance
-                        blendedHeight += neighborHeight * weight;
-                        totalWeight += weight;
-                    }
-
-                    // Normalize blended height
-                    if (totalWeight > 0)
-                    {
-                        blendedHeight /= (1 + totalWeight); // Normalize by total weights
-                    }
-                    biomeSpecificHeights[x, y] = blendedHeight;
+                // Normalize the blended height
+                if (totalWeight > 0)
+                {
+                    biomeSpecificHeights[x, y] = blendedHeight / totalWeight;
+                }
+                else
+                {
+                    biomeSpecificHeights[x, y] = 0; // or another default value
                 }
             }
         }
     }
 
-    private Dictionary<Vector2Int, List<Biome>> GetNearbyBiomes()
+    private Dictionary<IslandBiome, float[,]> GenerateDistanceMaps()
     {
-        Dictionary<Vector2Int, List<Biome>> nearbyBiomes = new Dictionary<Vector2Int, List<Biome>>();
+        // Create a distance map for each biome
+        Dictionary<IslandBiome, float[,]> distanceMaps = new Dictionary<IslandBiome, float[,]>();
 
         foreach (IslandBiome islandBiome in islandBiomes)
         {
-            foreach (Vector2Int borderTile in islandBiome.borderTiles)
+            float[,] distanceMap = new float[MapGenerator.mapChunkSize, MapGenerator.mapChunkSize];
+
+            for (int y = 0; y < MapGenerator.mapChunkSize; y++)
             {
-                // Check neighboring tiles within a 5-tile radius
-                for (int y = -5; y <= 5; y++)
+                for (int x = 0; x < MapGenerator.mapChunkSize; x++)
                 {
-                    for (int x = -5; x <= 5; x++)
-                    {
-                        if (Mathf.Abs(x) + Mathf.Abs(y) <= 5) // Ensure it's within a radius
-                        {
-                            Vector2Int neighborTile = borderTile + new Vector2Int(x, y);
-                            if (neighborTile.x >= 0 && neighborTile.x < MapGenerator.mapChunkSize && neighborTile.y >= 0 && neighborTile.y < MapGenerator.mapChunkSize)
-                            {
-                                // Check if the neighbor is part of a different biome
-                                foreach (IslandBiome otherBiome in islandBiomes)
-                                {
-                                    if (otherBiome != islandBiome && otherBiome.tiles.Contains(neighborTile))
-                                    {
-                                        if (!nearbyBiomes.ContainsKey(borderTile))
-                                        {
-                                            nearbyBiomes[borderTile] = new List<Biome>();
-                                        }
-                                        if (!nearbyBiomes[borderTile].Contains(otherBiome.biome))
-                                        {
-                                            nearbyBiomes[borderTile].Add(otherBiome.biome);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    distanceMap[x, y] = CalculateDistanceToBorder(new Vector2Int(x, y), islandBiome);
                 }
             }
+
+            distanceMaps[islandBiome] = distanceMap;
         }
 
-        return nearbyBiomes;
+        return distanceMaps;
     }
 
-    private Biome GetBiomeForTile(Vector2Int tile)
+    private float CalculateDistanceToBorder(Vector2Int tile, IslandBiome biome)
     {
-        foreach (IslandBiome islandBiome in islandBiomes)
+        float minDistance = float.MaxValue;
+
+        foreach (Vector2Int borderTile in biome.borderTiles)
         {
-            if (islandBiome.tiles.Contains(tile))
+            float distance = Vector2Int.Distance(tile, borderTile);
+            if (distance < minDistance)
             {
-                return islandBiome.biome;
+                minDistance = distance;
             }
         }
-        return null; // or return a default biome if necessary
+
+        return minDistance;
     }
 }

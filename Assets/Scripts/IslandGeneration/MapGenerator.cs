@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting.FullSerializer;
 using UnityEditor;
 using UnityEngine;
+using System;
 
 public class MapGenerator : MonoBehaviour
 {
@@ -67,7 +68,7 @@ public class MapGenerator : MonoBehaviour
             // Create IslandBiomes based on the biome areas
             for (int i = 0; i < biomeAreas.Count; i++)
             {
-                Biome randomBiome = biomes[Random.Range(0, biomes.Count)];
+                Biome randomBiome = biomes[UnityEngine.Random.Range(0, biomes.Count)];
                 IslandBiome islandBiome = new IslandBiome(randomBiome);
 
                 // Assign tiles to the biome
@@ -91,49 +92,52 @@ public class MapGenerator : MonoBehaviour
         int[] biomeAssignments = new int[biomeAreas.Count];
 
         for(int i=0; i < biomeAreas.Count; i++) {
-            biomeAssignments[i] = Random.Range(0, biomes.Count);
+            biomeAssignments[i] = UnityEngine.Random.Range(0, biomes.Count);
         }
 
-         // Blend biomes if the option is enabled
+        // Blend biomes if the option is enabled
         if (blendBiomes) {
             BlendBiomes blending = new BlendBiomes(islandBiomes, noiseMap);
-            blending.BlendBiomeHeights(biomeSpecificHeights);
+            float[,] biomeBlendedHeights = new float[mapChunkSize, mapChunkSize];
+            Array.Copy(biomeSpecificHeights, biomeBlendedHeights, biomeSpecificHeights.Length);
+            blending.BlendBiomeHeights(biomeBlendedHeights);
             // Assign colors to the biome-specific heights
-        for (int y = 0; y < mapChunkSize; y++) {
-            for (int x = 0; x < mapChunkSize; x++) {
-                float currentHeight = biomeSpecificHeights[x, y];
-                Vector2Int currentTile = new Vector2Int(x, y);
+            for (int y = 0; y < mapChunkSize; y++) {
+                for (int x = 0; x < mapChunkSize; x++) {
+                    float currentHeight = noiseMap[x, y];
+                    Vector2Int currentTile = new Vector2Int(x, y);
 
-                // Check which biome the current tile belongs to and assign the corresponding color
-                bool isBiomeTile = false;
+                    // Check which biome the current tile belongs to and assign the corresponding color
+                    bool isBiomeTile = false;
 
-                foreach (IslandBiome islandBiome in islandBiomes) {
-                    if (islandBiome.tiles.Contains(currentTile)) {
-                        Biome currentBiome = islandBiome.biome;
+                    foreach (IslandBiome islandBiome in islandBiomes) {
+                        if (islandBiome.tiles.Contains(currentTile)) {
+                            Biome currentBiome = islandBiome.biome;
 
-                        // Assign terrain color based on the biome's regions
-                        for (int i = 0; i < currentBiome.regions.Length; i++) {
-                            if (currentHeight <= currentBiome.regions[i].height) {
-                                colourMap[y * mapChunkSize + x] = currentBiome.regions[i].colour;
-                                isBiomeTile = true;
+                            // Assign terrain color based on the biome's regions
+                            for (int i = 0; i < currentBiome.regions.Length; i++) {
+                                if (currentHeight <= currentBiome.regions[i].height) {
+                                    colourMap[y * mapChunkSize + x] = currentBiome.regions[i].colour;
+                                    isBiomeTile = true;
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+
+                    // If the tile is not part of any biome, assign water or other color
+                    if (!isBiomeTile) {
+                        for (int i = 0; i < regions.Length; i++) {
+                            if (currentHeight <= regions[i].height) {
+                                colourMap[y * mapChunkSize + x] = regions[i].colour;
                                 break;
                             }
-                        }
-                        break;
-                    }
-                }
-
-                // If the tile is not part of any biome, assign water or other color
-                if (!isBiomeTile) {
-                    for (int i = 0; i < regions.Length; i++) {
-                        if (currentHeight <= regions[i].height) {
-                            colourMap[y * mapChunkSize + x] = regions[i].colour;
-                            break;
                         }
                     }
                 }
             }
-        }
+            biomeSpecificHeights = biomeBlendedHeights; // this is set after colors are painted onto map as it effects the color map if heights are overridden before
         } else {
             for (int y = 0; y < mapChunkSize; y++) {
                 for (int x = 0; x < mapChunkSize; x++) {
