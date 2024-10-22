@@ -11,7 +11,8 @@ public class MapGenerator : MonoBehaviour
     public DrawMode drawMode;
     public List<Biome> biomes;
     public List<IslandBiome> islandBiomes;
-    public const int mapChunkSize = 241;
+    public const int mapChunkSize = 239;
+    public bool useFlatShading;
     [Range(0,6)]
     public int levelOfDetail;
     public float noiseScale;
@@ -188,7 +189,7 @@ public class MapGenerator : MonoBehaviour
             display.DrawTexture(TextureGenerator.TextureFromColourMap(colourMap, mapChunkSize, mapChunkSize));
         }
         else if (drawMode == DrawMode.Mesh) {
-             display.DrawBiomeMesh(noiseMap, biomeSpecificHeights, colourMap, mapChunkSize, mapChunkSize, levelOfDetail);
+             display.DrawBiomeMesh(noiseMap, biomeSpecificHeights, colourMap, mapChunkSize, mapChunkSize, levelOfDetail, useFlatShading);
         } else if (drawMode == DrawMode.FalloffMap) {
             display.DrawTexture(TextureGenerator.TextureFromHeightMap(FalloffGenerator.GenerateFalloffMap(mapChunkSize)));
         }
