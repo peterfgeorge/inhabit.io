@@ -29,7 +29,7 @@ public class BlendBiomes
                 foreach (IslandBiome islandBiome in islandBiomes)
                 {
                     float distance = distanceMaps[islandBiome][x, y];
-                    float weight = Mathf.Clamp(1f / (distance + 1f), 0f, 10f); // Clamp max weight to avoid dominance
+                    float weight = Mathf.Clamp(1f / Mathf.Pow(distance + 1f, 2f), 0f, 1f); // Clamp max weight to avoid dominance
                     float biomeHeight = islandBiome.biome.meshHeightCurve.Evaluate(noiseMap[x, y]) * islandBiome.biome.meshHeightMultiplier;
 
                     blendedHeight += biomeHeight * weight;
