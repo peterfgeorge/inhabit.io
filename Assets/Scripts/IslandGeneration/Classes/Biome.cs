@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [System.Serializable]
-public class Biome
+public class Biome : MonoBehaviour
 {
     public string biomeName;
     public float meshHeightMultiplier;
