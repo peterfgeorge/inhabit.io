@@ -224,6 +224,7 @@ public class MapGenerator : MonoBehaviour
         MeshCollider meshCollider = meshObject?.GetComponent<MeshCollider>();
         float mapWidth = 100f; // Default width
         float mapDepth = 100f; // Default depth
+        float overlapCheckRadius = 2f;
 
         if (meshObject != null)
         {
@@ -284,18 +285,26 @@ public class MapGenerator : MonoBehaviour
                         if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, Mathf.Infinity, meshCollider ? 1 << meshCollider.gameObject.layer : ~0))
                         {
                             finalPosition.y = hit.point.y - 1.5f;
-                            Debug.Log("Map Height: " + finalPosition.y);
+                            //Debug.Log("Map Height: " + finalPosition.y);
                         }
                         else
                         {
                             Debug.LogWarning("Raycast did not hit any collider for position: " + rayOrigin);
                         }
                         
-                        // Instantiate the asset prefab at the final position
-                        GameObject instantiatedAsset = Instantiate(asset.prefab, finalPosition, Quaternion.identity, environmentParent.transform);
-                        instantiatedAsset.transform.localScale *= 4f;
+                        // Check if an asset already exists within the overlapCheckRadius
+                        if (!Physics.CheckSphere(finalPosition, overlapCheckRadius, LayerMask.GetMask("EnvironmentAssets")))
+                        {
+                            GameObject instantiatedAsset = Instantiate(asset.prefab, finalPosition, Quaternion.identity, environmentParent.transform);
+                            instantiatedAsset.transform.localScale *= 4f;
 
-                        
+                            // Optional: Set the new asset to the "EnvironmentAssets" layer
+                            instantiatedAsset.layer = LayerMask.NameToLayer("EnvironmentAssets");
+                        }
+                        else
+                        {
+                            Debug.Log("Another environmental asset detected at this location. Skipping placement.");
+                        }
                     }
                 }
             }
