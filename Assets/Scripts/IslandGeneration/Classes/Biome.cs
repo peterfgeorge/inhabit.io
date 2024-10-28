@@ -7,4 +7,5 @@ public class Biome : MonoBehaviour
     public float meshHeightMultiplier;
     public AnimationCurve meshHeightCurve;
     public TerrainType[] regions; // Array of TerrainType specific to each biome
+    public BiomeEnvironmentAsset[] environment;
 }

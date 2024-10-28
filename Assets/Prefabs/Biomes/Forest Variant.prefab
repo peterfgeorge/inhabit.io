@@ -61,8 +61,16 @@ PrefabInstance:
       value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.data[0]
+      value: 
+      objectReference: {fileID: 11400000, guid: bbd65b4b2a564b5429307283454a01f9, type: 2}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
       propertyPath: regions.Array.data[0].name
-      value: Desert
+      value: Sand
       objectReference: {fileID: 0}
     - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
       propertyPath: regions.Array.data[1].name

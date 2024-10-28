@@ -27,7 +27,7 @@ public class MapGenerator : MonoBehaviour
     public bool useFalloff;
     public bool removeSmallerIslands;
     public bool addBiomes;
-    public bool blendBiomes; // Checkbox for blending biomes
+    public bool blendBiomes;
 
     [Range(0,8)]
     public int numberOfBiomes;
@@ -38,12 +38,16 @@ public class MapGenerator : MonoBehaviour
 
     public TerrainType[] regions;
     float[,] falloffMap;
+    private float[,] noiseMap;
+    private float[,] biomeSpecificHeights = new float[mapChunkSize, mapChunkSize];
 
     void Awake() {
         falloffMap = FalloffGenerator.GenerateFalloffMap(mapChunkSize);
     }
     public void GenerateMap() {
-        float[,] noiseMap = Noise.GenerateNoiseMap(mapChunkSize, mapChunkSize, seed, noiseScale, octaves, persistance, lacunarity, offset);
+        CleanUpPrevMapGeneration();
+
+        noiseMap = Noise.GenerateNoiseMap(mapChunkSize, mapChunkSize, seed, noiseScale, octaves, persistance, lacunarity, offset);
 
         if (useFalloff) {
             for (int y = 0; y < mapChunkSize; y++) {
@@ -70,7 +74,8 @@ public class MapGenerator : MonoBehaviour
             for (int i = 0; i < biomeAreas.Count; i++)
             {
                 Biome randomBiome = biomes[UnityEngine.Random.Range(0, biomes.Count)];
-                IslandBiome islandBiome = new IslandBiome(randomBiome);
+                IslandBiome islandBiome = gameObject.AddComponent<IslandBiome>();
+                islandBiome.SetBiome(randomBiome);
 
                 // Assign tiles to the biome
                 foreach (Vector2Int tile in biomeAreas[i])
@@ -88,7 +93,6 @@ public class MapGenerator : MonoBehaviour
 
         // Update the colourMap based on the modified noiseMap
         Color[] colourMap = new Color[mapChunkSize * mapChunkSize];
-        float[,] biomeSpecificHeights = new float[mapChunkSize, mapChunkSize];
 
         int[] biomeAssignments = new int[biomeAreas.Count];
 
@@ -193,7 +197,142 @@ public class MapGenerator : MonoBehaviour
         } else if (drawMode == DrawMode.FalloffMap) {
             display.DrawTexture(TextureGenerator.TextureFromHeightMap(FalloffGenerator.GenerateFalloffMap(mapChunkSize)));
         }
+        PlaceEnvironmentalAssets();
+    }
+
+     // Mock function to simulate getting terrain height
+    private float GetTerrainHeightAtPosition(Vector3 position)
+{
+    int x = Mathf.Clamp(Mathf.FloorToInt(position.x), 0, mapChunkSize - 1);
+    int y = Mathf.Clamp(Mathf.FloorToInt(position.z), 0, mapChunkSize - 1);
+
+    if (noiseMap == null)
+    {
+        Debug.LogError("noiseMap is not initialized.");
+        return 0f; // Or a suitable default value
+    }
+
+    // Return the height from the noise map
+    return noiseMap[x, y];
+}
+
+    private void PlaceEnvironmentalAssets()
+    {
+        GameObject environmentParent = GameObject.Find("Environment") ?? new GameObject("Environment");
+
+        GameObject meshObject = GameObject.Find("Mesh");
+        MeshCollider meshCollider = meshObject?.GetComponent<MeshCollider>();
+        float mapWidth = 100f; // Default width
+        float mapDepth = 100f; // Default depth
+
+        if (meshObject != null)
+        {
+            MeshFilter meshFilter = meshObject.GetComponent<MeshFilter>();
+            if (meshFilter != null)
+            {
+                // Get the bounds of the mesh in local coordinates
+                Bounds meshBounds = meshFilter.sharedMesh.bounds;
+                
+                // Calculate world dimensions by multiplying bounds size by the scale
+                mapWidth = meshBounds.size.x * meshObject.transform.localScale.x;
+                mapDepth = meshBounds.size.z * meshObject.transform.localScale.z;
+                // Debug.Log("Map Width: " + mapWidth);
+                // Debug.Log("Map Depth: " + mapDepth);
+            }
+        }
         
+        foreach (IslandBiome islandBiome in islandBiomes)
+        {
+            Biome currentBiome = islandBiome.biome;
+
+            foreach (BiomeEnvironmentAsset asset in currentBiome.environment)
+            {
+                // Locate the Mesh object and retrieve its scale
+                Vector3 meshScale = Vector3.one; // Default scale if Mesh is not found
+
+                if (meshObject != null)
+                {
+                    meshScale = meshObject.transform.localScale; // Get the scale of the mesh
+                }
+                // Debug.Log("Mesh scale x: " + meshScale.x);
+                // Debug.Log("Mesh scale y: " + meshScale.z);
+
+                foreach (Vector2Int tile in islandBiome.tiles)
+                {
+                    // Initial position based on tile coordinates (used for height and region checks)
+                    Vector3 position = new Vector3(tile.x, biomeSpecificHeights[tile.x, tile.y], tile.y);
+
+                    // Check if the asset can be placed in this region based on height or other criteria
+                    if (IsRegionAllowed(asset, currentBiome, position))
+                    {
+                        // Calculate the final, adjusted position to account for the mesh scale and centering around origin
+                        Vector3 finalPosition = new Vector3(
+                            position.x * meshScale.x,
+                            position.y, // Keep the original height unchanged
+                            -position.z * meshScale.z
+                        );
+
+                        // Apply offset to center around the origin
+                        //Vector3 offset = new Vector3(-1f * finalPosition.x, 0, -1f * finalPosition.z);
+                        finalPosition.x = finalPosition.x - (.5f*mapWidth);
+                        finalPosition.z = finalPosition.z + (.5f*mapDepth);
+                        
+
+                        // Offset finalPosition.y to be above the mesh before raycasting
+                        Vector3 rayOrigin = finalPosition + Vector3.up * 100f;
+
+                        if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, Mathf.Infinity, meshCollider ? 1 << meshCollider.gameObject.layer : ~0))
+                        {
+                            finalPosition.y = hit.point.y - 1.5f;
+                            Debug.Log("Map Height: " + finalPosition.y);
+                        }
+                        else
+                        {
+                            Debug.LogWarning("Raycast did not hit any collider for position: " + rayOrigin);
+                        }
+                        
+                        // Instantiate the asset prefab at the final position
+                        GameObject instantiatedAsset = Instantiate(asset.prefab, finalPosition, Quaternion.identity, environmentParent.transform);
+                        instantiatedAsset.transform.localScale *= 4f;
+
+                        
+                    }
+                }
+            }
+        }
+    }
+
+    // Check if the asset can be placed in the current biome's allowed regions
+    private bool IsRegionAllowed(BiomeEnvironmentAsset asset, Biome biome, Vector3 position)
+    {
+        // Here, determine the region based on position
+        TerrainType currentRegion = GetTerrainTypeAtPosition(position, biome); // Implement this based on your terrain generation logic
+
+        // Check if the current region is allowed for the asset
+        int regionIndex = Array.IndexOf(biome.regions, currentRegion);
+        return regionIndex >= 0 && asset.allowedRegions[regionIndex];
+    }
+
+    private TerrainType GetTerrainTypeAtPosition(Vector3 position, Biome biome)
+    {
+        // Assuming you have a method to get the height at the position
+        float currentHeight = GetTerrainHeightAtPosition(position);
+
+        // Loop through the biome's regions to find the correct TerrainType
+        for (int i = 0; i < biome.regions.Length; i++)
+        {
+            TerrainType region = biome.regions[i];
+
+            // Check if the current height is less than or equal to the region's maxHeight
+            if (currentHeight <= region.height)
+            {
+                // Return the TerrainType if the height fits within its range
+                return region;
+            }
+        }
+
+        // Return null or a default TerrainType if no match is found
+        return null; // or return a default TerrainType if necessary
     }
 
     // Simple method to check if a tile is a border tile (customize this to your needs)
@@ -222,4 +361,50 @@ public class MapGenerator : MonoBehaviour
 
         falloffMap = FalloffGenerator.GenerateFalloffMap (mapChunkSize);
     }
+
+    void CleanUpPrevMapGeneration()
+    {
+        // Find all IslandBiome components attached to any GameObjects in the scene
+        IslandBiome[] existingBiomes = FindObjectsOfType<IslandBiome>();
+
+        foreach (IslandBiome biome in existingBiomes)
+        {
+            // Use DestroyImmediate if we're in the editor (edit mode), otherwise use Destroy
+            if (Application.isEditor && !Application.isPlaying)
+            {
+                DestroyImmediate(biome);
+            }
+            else
+            {
+                Destroy(biome);
+            }
+        }
+
+        // Find the Environment GameObject
+        GameObject environmentParent = GameObject.Find("Environment");
+        if (environmentParent != null)
+        {
+            // Collect all child GameObjects in a list
+            List<GameObject> childrenToDestroy = new List<GameObject>();
+
+            foreach (Transform child in environmentParent.transform)
+            {
+                childrenToDestroy.Add(child.gameObject);
+            }
+
+            // Now destroy the collected children
+            foreach (GameObject child in childrenToDestroy)
+            {
+                if (Application.isEditor && !Application.isPlaying)
+                {
+                    DestroyImmediate(child);
+                }
+                else
+                {
+                    Destroy(child);
+                }
+            }
+        }
+    }
+
 }
