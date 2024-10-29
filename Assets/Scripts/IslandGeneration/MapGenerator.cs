@@ -286,7 +286,7 @@ public class MapGenerator : MonoBehaviour
 
                             if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, Mathf.Infinity, meshCollider ? 1 << meshCollider.gameObject.layer : ~0))
                             {
-                                finalPosition.y = hit.point.y - 1.5f;
+                                finalPosition.y = hit.point.y - .5f;
                                 //Debug.Log("Map Height: " + finalPosition.y);
                             }
                             else
@@ -297,7 +297,11 @@ public class MapGenerator : MonoBehaviour
                             // Check if an asset already exists within the overlapCheckRadius
                             if (!Physics.CheckSphere(finalPosition, overlapCheckRadius, LayerMask.GetMask("EnvironmentAssets")))
                             {
-                                GameObject instantiatedAsset = Instantiate(entry.asset.prefab, finalPosition, Quaternion.identity, environmentParent.transform);
+                                Quaternion originalRotation = entry.asset.prefab.transform.rotation;
+                                float randomY = UnityEngine.Random.Range(0f, 360f);
+                                Quaternion finalRotation = Quaternion.Euler(originalRotation.eulerAngles.x, randomY, originalRotation.eulerAngles.z);
+
+                                GameObject instantiatedAsset = Instantiate(entry.asset.prefab, finalPosition, finalRotation, environmentParent.transform);
                                 instantiatedAsset.transform.localScale *= 4f;
 
                                 // Optional: Set the new asset to the "EnvironmentAssets" layer
