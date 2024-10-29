@@ -169,8 +169,64 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.data[0].asset
+      value: 
+      objectReference: {fileID: 11400000, guid: bbd65b4b2a564b5429307283454a01f9, type: 2}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.data[1].asset
+      value: 
+      objectReference: {fileID: 11400000, guid: 3ef5fda218524824fbc981a5838a3b9c, type: 2}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.data[2].asset
+      value: 
+      objectReference: {fileID: 11400000, guid: bbd65b4b2a564b5429307283454a01f9, type: 2}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.data[3].asset
+      value: 
+      objectReference: {fileID: 11400000, guid: bbd65b4b2a564b5429307283454a01f9, type: 2}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.data[4].asset
+      value: 
+      objectReference: {fileID: 11400000, guid: bbd65b4b2a564b5429307283454a01f9, type: 2}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.data[5].asset
+      value: 
+      objectReference: {fileID: 11400000, guid: bbd65b4b2a564b5429307283454a01f9, type: 2}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.data[6].asset
+      value: 
+      objectReference: {fileID: 11400000, guid: bbd65b4b2a564b5429307283454a01f9, type: 2}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
       propertyPath: meshHeightCurve.m_Curve.Array.size
       value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.data[0].frequency
+      value: 0.035
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.data[1].frequency
+      value: 0.009
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.data[2].frequency
+      value: 0.074
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.data[3].frequency
+      value: 0.074
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.data[4].frequency
+      value: 0.074
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.data[5].frequency
+      value: 0.074
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.data[6].frequency
+      value: 0.074
       objectReference: {fileID: 0}
     - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
       propertyPath: meshHeightCurve.m_Curve.Array.data[1].time

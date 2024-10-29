@@ -246,7 +246,7 @@ public class MapGenerator : MonoBehaviour
         {
             Biome currentBiome = islandBiome.biome;
 
-            foreach (BiomeEnvironmentAsset asset in currentBiome.environment)
+            foreach (BiomeEnvironmentAssetEntry entry in currentBiome.environment)
             {
                 // Locate the Mesh object and retrieve its scale
                 Vector3 meshScale = Vector3.one; // Default scale if Mesh is not found
@@ -260,50 +260,53 @@ public class MapGenerator : MonoBehaviour
 
                 foreach (Vector2Int tile in islandBiome.tiles)
                 {
-                    // Initial position based on tile coordinates (used for height and region checks)
-                    Vector3 position = new Vector3(tile.x, biomeSpecificHeights[tile.x, tile.y], tile.y);
-
-                    // Check if the asset can be placed in this region based on height or other criteria
-                    if (IsRegionAllowed(asset, currentBiome, position))
+                    if (UnityEngine.Random.value < entry.frequency) 
                     {
-                        // Calculate the final, adjusted position to account for the mesh scale and centering around origin
-                        Vector3 finalPosition = new Vector3(
-                            position.x * meshScale.x,
-                            position.y, // Keep the original height unchanged
-                            -position.z * meshScale.z
-                        );
+                        // Initial position based on tile coordinates (used for height and region checks)
+                        Vector3 position = new Vector3(tile.x, biomeSpecificHeights[tile.x, tile.y], tile.y);
 
-                        // Apply offset to center around the origin
-                        //Vector3 offset = new Vector3(-1f * finalPosition.x, 0, -1f * finalPosition.z);
-                        finalPosition.x = finalPosition.x - (.5f*mapWidth);
-                        finalPosition.z = finalPosition.z + (.5f*mapDepth);
-                        
+                        // Check if the asset can be placed in this region based on height or other criteria
+                        if (IsRegionAllowed(entry.asset, currentBiome, position))
+                        {
+                            // Calculate the final, adjusted position to account for the mesh scale and centering around origin
+                            Vector3 finalPosition = new Vector3(
+                                position.x * meshScale.x,
+                                position.y, // Keep the original height unchanged
+                                -position.z * meshScale.z
+                            );
 
-                        // Offset finalPosition.y to be above the mesh before raycasting
-                        Vector3 rayOrigin = finalPosition + Vector3.up * 100f;
+                            // Apply offset to center around the origin
+                            //Vector3 offset = new Vector3(-1f * finalPosition.x, 0, -1f * finalPosition.z);
+                            finalPosition.x = finalPosition.x - (.5f*mapWidth);
+                            finalPosition.z = finalPosition.z + (.5f*mapDepth);
+                            
 
-                        if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, Mathf.Infinity, meshCollider ? 1 << meshCollider.gameObject.layer : ~0))
-                        {
-                            finalPosition.y = hit.point.y - 1.5f;
-                            //Debug.Log("Map Height: " + finalPosition.y);
-                        }
-                        else
-                        {
-                            Debug.LogWarning("Raycast did not hit any collider for position: " + rayOrigin);
-                        }
-                        
-                        // Check if an asset already exists within the overlapCheckRadius
-                        if (!Physics.CheckSphere(finalPosition, overlapCheckRadius, LayerMask.GetMask("EnvironmentAssets")))
-                        {
-                            GameObject instantiatedAsset = Instantiate(asset.prefab, finalPosition, Quaternion.identity, environmentParent.transform);
-                            instantiatedAsset.transform.localScale *= 4f;
+                            // Offset finalPosition.y to be above the mesh before raycasting
+                            Vector3 rayOrigin = finalPosition + Vector3.up * 100f;
 
-                            // Optional: Set the new asset to the "EnvironmentAssets" layer
-                            instantiatedAsset.layer = LayerMask.NameToLayer("EnvironmentAssets");
-                        }
-                        else
-                        {
-                            Debug.Log("Another environmental asset detected at this location. Skipping placement.");
+                            if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, Mathf.Infinity, meshCollider ? 1 << meshCollider.gameObject.layer : ~0))
+                            {
+                                finalPosition.y = hit.point.y - 1.5f;
+                                //Debug.Log("Map Height: " + finalPosition.y);
+                            }
+                            else
+                            {
+                                Debug.LogWarning("Raycast did not hit any collider for position: " + rayOrigin);
+                            }
+                            
+                            // Check if an asset already exists within the overlapCheckRadius
+                            if (!Physics.CheckSphere(finalPosition, overlapCheckRadius, LayerMask.GetMask("EnvironmentAssets")))
+                            {
+                                GameObject instantiatedAsset = Instantiate(entry.asset.prefab, finalPosition, Quaternion.identity, environmentParent.transform);
+                                instantiatedAsset.transform.localScale *= 4f;
+
+                                // Optional: Set the new asset to the "EnvironmentAssets" layer
+                                instantiatedAsset.layer = LayerMask.NameToLayer("EnvironmentAssets");
+                            }
+                            else
+                            {
+                                Debug.Log("Another environmental asset detected at this location. Skipping placement.");
+                            }
                         }
                     }
                 }

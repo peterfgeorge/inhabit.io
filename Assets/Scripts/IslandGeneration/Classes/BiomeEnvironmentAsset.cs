@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 
 
-[System.Serializable]
-[CreateAssetMenu(fileName = "NewBiomeEnvironmentAsset", menuName = "Environment/Biome Environment Asset")]
+[Serializable]
+[CreateAssetMenu(fileName = "NewBiomeEnvironmentAsset", menuName = "Environment/BiomeEnvironmentAsset")]
 public class BiomeEnvironmentAsset : ScriptableObject
 {
     public GameObject prefab; // Prefab for the environment asset

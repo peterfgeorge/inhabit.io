@@ -61,6 +61,10 @@ PrefabInstance:
       value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
       propertyPath: regions.Array.data[0].name
       value: Sand
       objectReference: {fileID: 0}
@@ -74,7 +78,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
       propertyPath: regions.Array.data[0].colour.b
-      value: 0.3591765
+      value: 0.36078432
       objectReference: {fileID: 0}
     - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
       propertyPath: regions.Array.data[0].colour.g
@@ -82,11 +86,27 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
       propertyPath: regions.Array.data[0].colour.r
-      value: 0.81847686
+      value: 0.81960785
       objectReference: {fileID: 0}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.data[0].asset
+      value: 
+      objectReference: {fileID: 11400000, guid: 20f60eeba9b10464e90b1f403f86f09b, type: 2}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.data[1].asset
+      value: 
+      objectReference: {fileID: 11400000, guid: 20f60eeba9b10464e90b1f403f86f09b, type: 2}
     - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
       propertyPath: meshHeightCurve.m_Curve.Array.size
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.data[0].frequency
+      value: 0.004
+      objectReference: {fileID: 0}
+    - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
+      propertyPath: environment.Array.data[1].frequency
+      value: 0.026
       objectReference: {fileID: 0}
     - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
       propertyPath: meshHeightCurve.m_Curve.Array.data[1].time
