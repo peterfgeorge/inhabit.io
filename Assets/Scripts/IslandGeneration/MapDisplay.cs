@@ -30,7 +30,7 @@ public class MapDisplay : MonoBehaviour
         // Apply the generated mesh and color texture to the terrain
         Mesh generatedMesh = biomeMeshData.CreateMesh();
         meshFilter.sharedMesh = generatedMesh;
-        meshRenderer.sharedMaterial.mainTexture = TextureGenerator.TextureFromColourMap(colourMap, width, height);
+        meshRenderer.material.mainTexture = TextureGenerator.TextureFromColourMap(colourMap, width, height);
 
         // Find the "Mesh" GameObject
         GameObject meshGameObject = GameObject.Find("Mesh");

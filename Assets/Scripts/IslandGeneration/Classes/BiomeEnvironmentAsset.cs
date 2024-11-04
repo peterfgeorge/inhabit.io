@@ -51,57 +51,60 @@ public class BiomeEnvironmentAsset : ScriptableObject
     }
 }
 
-// Custom Editor to create the dropdown and checkbox UI in the Inspector
-[CustomEditor(typeof(BiomeEnvironmentAsset))]
-public class BiomeEnvironmentAssetEditor : Editor
-{
-    public override void OnInspectorGUI()
+#if UNITY_EDITOR
+
+    // Custom Editor to create the dropdown and checkbox UI in the Inspector
+    [CustomEditor(typeof(BiomeEnvironmentAsset))]
+    public class BiomeEnvironmentAssetEditor : Editor
     {
-        BiomeEnvironmentAsset asset = (BiomeEnvironmentAsset)target;
-
-        // Dropdown for biome selection from MapGenerator's biomes array
-        MapGenerator mapGen = FindObjectOfType<MapGenerator>(); // Ensure there's only one MapGenerator in the scene
-        if (mapGen != null)
+        public override void OnInspectorGUI()
         {
-            string[] biomeNames = new string[mapGen.biomes.Count];
-            for (int i = 0; i < biomeNames.Length; i++)
-            {
-                biomeNames[i] = mapGen.biomes[i].biomeName;
-            }
+            BiomeEnvironmentAsset asset = (BiomeEnvironmentAsset)target;
 
-            // Select biome from dropdown
-            int selectedBiomeIndex = EditorGUILayout.Popup("Biome", Array.IndexOf(biomeNames, asset.biomeName), biomeNames);
-            if (selectedBiomeIndex >= 0)
+            // Dropdown for biome selection from MapGenerator's biomes array
+            MapGenerator mapGen = FindObjectOfType<MapGenerator>(); // Ensure there's only one MapGenerator in the scene
+            if (mapGen != null)
             {
-                asset.biomeName = biomeNames[selectedBiomeIndex];
-
-                // Initialize allowedRegions based on the selected biome's regions
-                TerrainType[] selectedBiomeRegions = mapGen.biomes[selectedBiomeIndex].regions;
-                if (asset.allowedRegions == null || asset.allowedRegions.Length != selectedBiomeRegions.Length)
+                string[] biomeNames = new string[mapGen.biomes.Count];
+                for (int i = 0; i < biomeNames.Length; i++)
                 {
-                    asset.InitializeAllowedRegions(selectedBiomeRegions);
+                    biomeNames[i] = mapGen.biomes[i].biomeName;
                 }
 
-                // Display checkboxes for each region
-                EditorGUILayout.LabelField("Allowed Regions", EditorStyles.boldLabel);
-                for (int i = 0; i < selectedBiomeRegions.Length; i++)
+                // Select biome from dropdown
+                int selectedBiomeIndex = EditorGUILayout.Popup("Biome", Array.IndexOf(biomeNames, asset.biomeName), biomeNames);
+                if (selectedBiomeIndex >= 0)
                 {
-                    asset.allowedRegions[i] = EditorGUILayout.Toggle(selectedBiomeRegions[i].name, asset.allowedRegions[i]);
+                    asset.biomeName = biomeNames[selectedBiomeIndex];
+
+                    // Initialize allowedRegions based on the selected biome's regions
+                    TerrainType[] selectedBiomeRegions = mapGen.biomes[selectedBiomeIndex].regions;
+                    if (asset.allowedRegions == null || asset.allowedRegions.Length != selectedBiomeRegions.Length)
+                    {
+                        asset.InitializeAllowedRegions(selectedBiomeRegions);
+                    }
+
+                    // Display checkboxes for each region
+                    EditorGUILayout.LabelField("Allowed Regions", EditorStyles.boldLabel);
+                    for (int i = 0; i < selectedBiomeRegions.Length; i++)
+                    {
+                        asset.allowedRegions[i] = EditorGUILayout.Toggle(selectedBiomeRegions[i].name, asset.allowedRegions[i]);
+                    }
                 }
             }
-        }
-        else
-        {
-            EditorGUILayout.HelpBox("MapGenerator not found in the scene.", MessageType.Warning);
-        }
+            else
+            {
+                EditorGUILayout.HelpBox("MapGenerator not found in the scene.", MessageType.Warning);
+            }
 
-        // Show prefab field
-        asset.prefab = (GameObject)EditorGUILayout.ObjectField("Prefab", asset.prefab, typeof(GameObject), false);
+            // Show prefab field
+            asset.prefab = (GameObject)EditorGUILayout.ObjectField("Prefab", asset.prefab, typeof(GameObject), false);
 
-        // Mark changes as dirty
-        if (GUI.changed)
-        {
-            EditorUtility.SetDirty(asset);
+            // Mark changes as dirty
+            if (GUI.changed)
+            {
+                EditorUtility.SetDirty(asset);
+            }
         }
     }
-}
+#endif
