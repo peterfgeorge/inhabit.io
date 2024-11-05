@@ -11589,9 +11589,9 @@ MonoBehaviour:
   islandCenter: {fileID: 440832175}
   rotationSpeed: 5
   flickDamping: 0.99
-  zoomSpeed: 100
+  zoomSpeed: 500
   minZoomDistance: 200
-  maxZoomDistance: 1400
+  maxZoomDistance: 2000
 --- !u!1 &1118515536
 GameObject:
   m_ObjectHideFlags: 0
