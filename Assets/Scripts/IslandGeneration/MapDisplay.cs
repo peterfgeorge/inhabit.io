@@ -9,6 +9,13 @@ public class MapDisplay : MonoBehaviour
     public MeshFilter meshFilter;
     public MeshRenderer meshRenderer;
 
+    void Start() {
+        // Check if meshRenderer uses URP shader
+        if (meshRenderer != null && meshRenderer.sharedMaterial.shader.name != "Universal Render Pipeline/Lit") {
+            meshRenderer.sharedMaterial.shader = Shader.Find("Universal Render Pipeline/Lit");
+        }
+    }
+
     public Mesh GetMesh() {
         return GetComponent<MeshFilter>().sharedMesh;
     }
@@ -19,7 +26,7 @@ public class MapDisplay : MonoBehaviour
     }
 
     public void DrawMesh(MeshData meshData, Texture2D texture) {
-        meshFilter.sharedMesh = meshData.CreateMesh ();
+        meshFilter.sharedMesh = meshData.CreateMesh();
         meshRenderer.sharedMaterial.mainTexture = texture;
     }
 
