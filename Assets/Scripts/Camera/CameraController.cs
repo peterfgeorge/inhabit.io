@@ -10,8 +10,11 @@ public class CameraController : MonoBehaviour
     public float minZoomDistance = 50f; // Minimum zoom distance
     public float maxZoomDistance = 200f; // Maximum zoom distance
 
+    public float autoRotateSpeed = 0.5f; // Speed of auto-rotation
     private bool isDragging = false;
     private float momentum = 0.0f;
+
+    private float timer = 0.0f; // Timer for auto-rotation
 
     void Update()
     {
@@ -24,6 +27,7 @@ public class CameraController : MonoBehaviour
         else if (Input.GetMouseButtonUp(0))
         {
             isDragging = false;
+            timer = 0.0f;
         }
 
         // Handle rotation
@@ -34,14 +38,24 @@ public class CameraController : MonoBehaviour
             islandCenter.Rotate(0, rotationAmount, 0);
             momentum = rotationAmount;
         }
-        else if (Mathf.Abs(momentum) > 0.01f)
+        else
         {
-            islandCenter.Rotate(0, momentum, 0);
-            momentum *= flickDamping;
-
-            if (Mathf.Abs(momentum) < 0.01f)
+            if (Mathf.Abs(momentum) > 0.01f)
             {
-                momentum = 0;
+                islandCenter.Rotate(0, momentum, 0);
+                momentum *= flickDamping;
+
+                if (Mathf.Abs(momentum) < 0.01f)
+                {
+                    momentum = 0;
+                }
+            }
+
+            // Start counting up when not dragging
+            timer += Time.deltaTime;
+            if (timer > 3.0f) // If no interaction for 3 seconds, start auto-rotating
+            {
+                islandCenter.Rotate(0, autoRotateSpeed * Time.deltaTime, 0);
             }
         }
 
@@ -51,6 +65,7 @@ public class CameraController : MonoBehaviour
         {
             float newZoomDistance = Mathf.Clamp(transform.localPosition.magnitude - scrollInput * zoomSpeed, minZoomDistance, maxZoomDistance);
             transform.localPosition = transform.localPosition.normalized * newZoomDistance;
+            timer = 0.0f; // Reset timer when zooming
         }
     }
 }

@@ -102,7 +102,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
       propertyPath: environment.Array.data[0].frequency
-      value: 0.004
+      value: 0.007
       objectReference: {fileID: 0}
     - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
       propertyPath: environment.Array.data[1].frequency
