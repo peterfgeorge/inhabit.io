@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class CameraController : MonoBehaviour
 {
@@ -18,13 +19,13 @@ public class CameraController : MonoBehaviour
 
     void Update()
     {
-        // Begin drag
-        if (Input.GetMouseButtonDown(0))
+        // Begin drag && Makes sure user isn't clicking on UI elements
+        if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
         {
             isDragging = true;
             momentum = 0.0f;
         }
-        else if (Input.GetMouseButtonUp(0))
+        else if (Input.GetMouseButtonUp(0) && isDragging)
         {
             isDragging = false;
             timer = 0.0f;
