@@ -291,7 +291,7 @@ public class MapGenerator : MonoBehaviour
                             }
                             else
                             {
-                                Debug.LogWarning("Raycast did not hit any collider for position: " + rayOrigin);
+                                // Debug.LogWarning("Raycast did not hit any collider for position: " + rayOrigin);
                             }
                             
                             // Check if an asset already exists within the overlapCheckRadius

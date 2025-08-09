@@ -24,6 +24,9 @@ public class IslandGenUIHandler : MonoBehaviour
     public void GenerateIsland()
     {
         mapGenerator.GenerateMap();
-        Debug.Log(mapGenerator.biomes);
+        foreach (var biome in mapGenerator.biomes)
+        {
+            Debug.Log(biome);
+        }
     }
 }
