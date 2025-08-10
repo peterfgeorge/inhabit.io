@@ -58,7 +58,23 @@ public class IslandGenUIHandler : MonoBehaviour
         }
         else
         {
+            if (string.IsNullOrEmpty(seedInputField.text))
+            {
+                seedInputField.text = Random.Range(0, int.MaxValue).ToString();
+            }
             mapGenerator.seed = int.Parse(seedInputField.text);
+        }
+    }
+
+    public void ToggleRandomSeed()
+    {
+        if (randomSeed)
+        {
+            randomSeed = false;
+        }
+        else
+        {
+            randomSeed = true;
         }
     }
 }
