@@ -37,6 +37,7 @@ public class MapGenerator : MonoBehaviour
     public bool autoUpdate;
 
     public TerrainType[] regions;
+    public List<Biome> everyBiomePrefab;
     float[,] falloffMap;
     private float[,] noiseMap;
     private float[,] biomeSpecificHeights = new float[mapChunkSize, mapChunkSize];

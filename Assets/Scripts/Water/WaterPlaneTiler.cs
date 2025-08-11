@@ -33,8 +33,12 @@ public class PlaneTilerEditor : MonoBehaviour
             for (int z = 0; z < gridHeight; z++)
             {
                 Vector3 position = new Vector3(x*200 - 1460, 19, z*200 - 1418);  // Position for each plane
+                #if UNITY_EDITOR
                 GameObject plane = (GameObject)PrefabUtility.InstantiatePrefab(planePrefab, transform);
                 plane.transform.position = position;
+                #else
+                GameObject plane = Instantiate(planePrefab, position, Quaternion.identity, transform);
+                #endif
                 plane.transform.SetParent(transform);  // Make it a child of the object with this script
             }
         }
