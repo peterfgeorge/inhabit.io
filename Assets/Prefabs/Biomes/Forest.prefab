@@ -62,7 +62,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
       propertyPath: environment.Array.size
-      value: 4
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
       propertyPath: environment.Array.data[0]
@@ -187,7 +187,7 @@ PrefabInstance:
     - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
       propertyPath: environment.Array.data[4].asset
       value: 
-      objectReference: {fileID: 11400000, guid: bbd65b4b2a564b5429307283454a01f9, type: 2}
+      objectReference: {fileID: 11400000, guid: 23582fcc8c911a24da5e85fd335b15c1, type: 2}
     - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
       propertyPath: environment.Array.data[5].asset
       value: 
@@ -218,7 +218,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
       propertyPath: environment.Array.data[4].frequency
-      value: 0.074
+      value: 0.23
       objectReference: {fileID: 0}
     - target: {fileID: 1106269255140862412, guid: 8e29e1007ed19e749b345b39c4a3c9c6, type: 3}
       propertyPath: environment.Array.data[5].frequency

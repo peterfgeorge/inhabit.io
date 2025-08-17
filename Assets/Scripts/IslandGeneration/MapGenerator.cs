@@ -4,6 +4,7 @@ using Unity.VisualScripting.FullSerializer;
 using UnityEditor;
 using UnityEngine;
 using System;
+using Unity.VisualScripting;
 
 public class MapGenerator : MonoBehaviour
 {
@@ -303,8 +304,15 @@ public class MapGenerator : MonoBehaviour
                                 Quaternion finalRotation = Quaternion.Euler(originalRotation.eulerAngles.x, randomY, originalRotation.eulerAngles.z);
 
                                 GameObject instantiatedAsset = Instantiate(entry.asset.prefab, finalPosition, finalRotation, environmentParent.transform);
-                                instantiatedAsset.transform.localScale *= 4f;
-
+                                if (entry.asset.scaleUp)
+                                {
+                                    Debug.Log("Scaling up environmental asset: " + entry.asset.prefab.name);
+                                    instantiatedAsset.transform.localScale *= 4f;
+                                }
+                                else
+                                {
+                                    instantiatedAsset.transform.localScale /= 4f;
+                                }
                                 // Optional: Set the new asset to the "EnvironmentAssets" layer
                                 instantiatedAsset.layer = LayerMask.NameToLayer("EnvironmentAssets");
                             }

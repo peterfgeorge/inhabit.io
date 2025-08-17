@@ -14,8 +14,12 @@ public class BiomeEnvironmentAsset : ScriptableObject
     [HideInInspector]
     public string biomeName;
 
+    public bool scaleUp = true;
+
     // Boolean array to manage allowed regions for this asset
     public bool[] allowedRegions;
+
+    
 
     // Method to populate allowedRegions based on the selected biome's regions
     public void InitializeAllowedRegions(TerrainType[] biomeRegions)
@@ -83,9 +87,11 @@ public class BiomeEnvironmentAsset : ScriptableObject
                     {
                         asset.InitializeAllowedRegions(selectedBiomeRegions);
                     }
+                    
+                    asset.scaleUp = EditorGUILayout.Toggle("Scale Up", asset.scaleUp);
 
                     // Display checkboxes for each region
-                    EditorGUILayout.LabelField("Allowed Regions", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField("Allowed Regions", EditorStyles.boldLabel);
                     for (int i = 0; i < selectedBiomeRegions.Length; i++)
                     {
                         asset.allowedRegions[i] = EditorGUILayout.Toggle(selectedBiomeRegions[i].name, asset.allowedRegions[i]);
