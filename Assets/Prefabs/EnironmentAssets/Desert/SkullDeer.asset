@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a03b6263df1592e4d827fe0417854a5b, type: 3}
+  m_Name: SkullDeer
+  m_EditorClassIdentifier: 
+  prefab: {fileID: 3975917755061336079, guid: 8943fbc4fbc77dd49b8d85a8ae2303e3, type: 3}
+  biomeName: Desert
+  scaleUp: 0
+  allowedRegions: 01
